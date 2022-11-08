@@ -1,0 +1,279 @@
+---
+title: "INFO659 Assignment 1"
+output: html_notebook
+---
+
+```{r}
+library(ggplot2)
+
+df = subset(insurance, select = -c(region))
+head(df,4)
+```
+
+## Think Business: Framing the business problem:-
+
+The given data set provides us with the age, sex, BMI( providing an understanding of body, 
+weights that are relatively high or low relative to height) and number of children covered for the given individual along with their Individual medical costs billed by health insurance
+
+Understand Data: Data source identification and understanding:- 
+
+The above data is collected from the website kaggle(Medical Cost Personal Data sets) link: https://www.kaggle.com/datasets/mirichoi0218/insurance?resource=download
+The data set gives us insight on how the health and other factors can have major impact on the insurance a person is buying and how is the insurance companies going to pay an individuals medical expenses in the future.Also this study will also help us to identify how to lower the charges by selecting the clients based on their lifestyle(BMI, age, smoker etc).
+
+##UNDERSTANDING DATA
+
+Describe your data in terms of the following aspects: 
+concept of learning: in the given data set, there are 4 input independent parameters and one dependent parameter, we can presume it as a problem which can be solved using linear regression with multiple variables
+
+Data Attributws:
+```{r}
+colnames(df)
+```
+The given data set has 5 attributes- age, sex, bmi, children, and smoker namely. Also the target variable is charges.
+age: age of primary beneficiary
+sex: insurance contractor gender, female, male
+bmi: Body mass index, providing an understanding of body, weights that are relatively high or low relative to height,
+objective index of body weight (kg / m ^ 2) using the ratio of height to weight, ideally 18.5 to 24.9
+children: Number of children covered by health insurance / Number of dependents
+smoker: if the primary benificiary smokes or not
+charges: Individual medical costs billed by health insurance
+
+```{r}
+head(df, 1)
+```
+In this instance of the data, primary benificary is a 19 year old female, her BMI is 27.9 and 
+has 0 children's/ number of dependents. She does smokes and her charges were 16884.92$.
+
+# Data in Action: Data preparation, visualization and exploration 
+
+counting the number of different parameters in data frame
+
+```{r}
+table(df['sex'])
+table(df['children'])
+table(df['smoker'])
+```
+
+```{r}
+ggplot(df, aes(x=sex)) + geom_bar()
+```
+the graph shows us that there are almost equal number of data points for both male and females, 
+which are taken in the dataset.
+
+```{r}
+ggplot(df, aes(x = children)) +geom_bar()
+```
+
+the categorical data suggests that the maximum number of people had 0 childrens
+covered by the insurance, followed by 1,2,3,4,5 childrens
+
+```{r}
+ggplot(df, aes(x = smoker)) +geom_bar()
+```
+
+the category suggests that the people who opted for the insurance to cover the charges, maximum of them were non smokers.
+
+```{r}
+hist(df$charges)
+```
+
+data distribution with log transformation the above histogram shows us that the most of the users have their charges in the range of 0 to 15,000$.
+
+```{r}
+hist(log(df$charges))
+```
+
+
+
+
+after taking the log of charges, we can clearly see that the distribution becomes fairly gaussian.
+
+```{r}
+plot(df$bmi, df$age ,xlab="bmi of customer", ylab="age of customer", pch=19,col = "orange")
+```
+
+```{r}
+plot(df$bmi, df$charges ,xlab="bmi of customer", ylab="charges of customer", pch=19,col = "orange")
+```
+drawing a scatter plot of bmi and log(charges)
+```{r}
+plot(df$bmi, log(df$charges) ,xlab="bmi of customer", ylab="log of charges of customer", pch=19,col = "orange")
+
+```
+
+
+
+while for most of the bmi in range 0 to 30 the charges remained typically in the range of 0 to 20,000, for some bmi in the range of 30-50 the charges went up from the range of 40,000$ to 60,000+$'s
+ 
+```{r}
+summary(df)
+```
+```{r}
+boxplot(df$charges)
+```
+analysing the boxplot for charges shows us again, where most of the data is concentrated
+
+```{r}
+boxplot(df$children)
+
+```
+analysing the boxplot we get that most of the people get 0-2 childrens covered under their insurance
+
+```{r}
+boxplot(df$bmi)
+
+```
+
+analysing the density of the charges
+```{r}
+plot(density(df$charges))
+```
+plotting log(charges)
+```{r}
+plot(density(log(df$charges)))
+```
+plotting charges by age
+
+```{r}
+plot(df$age, df$charges ,xlab="age of customer", ylab="charges of customer", pch=19, col = "orange")
+
+```
+plotting age with log of charges for each customer
+```{r}
+plot(df$age, log(df$charges) ,xlab="age of customer", ylab="log of charges of customer", pch=19, col = "orange")
+```
+
+
+```{r}
+cor(df$bmi, df$charges,  method = "pearson", use = "complete.obs")
+```
+By using the pearsons coefficient, bmi and charges are only 0.19 correlated. 
+
+```{r}
+cor(df$age, df$charges,  method = "spearman", use = "complete.obs")
+
+```
+By using the spearman's coefficient formula, the correlation is 0.534, thus somewhat co-related.
+
+
+
+```{r}
+x <- df$age
+y <- df$charges
+# Plot with main and axis titles
+# Change point shape (pch = 19) and remove frame.
+plot(x, y, main = "Main title",
+     xlab = "age", ylab = "charges",
+     pch = 19, frame = FALSE)
+# Add regression line
+plot(x, y, main = "Main title",
+     xlab = "age", ylab = "charges",
+     pch = 19, frame = FALSE)
+abline(lm(y ~ x, data = df), col = "red")
+```
+the red line poorly fits the data, Also the data looks very scattered to be drawing a linear relationship between age and charges. plotting the linear regression line to fit the data for 2 attributes at a time
+
+plotting a regression line between age and log(charges)
+```{r}
+x <- df$age
+y <- log(df$charges)
+# Plot with main and axis titles
+# Change point shape (pch = 19) and remove frame.
+plot(x, y, main = "Main title",
+     xlab = "age", ylab = "log of charges",
+     pch = 19, frame = FALSE)
+# Add regression line
+plot(x, y, main = "Main title",
+     xlab = "age", ylab = "log of charges",
+     pch = 19, frame = FALSE)
+abline(lm(y ~ x, data = df), col = "red")
+```
+
+
+
+```{r}
+cor(df$age, df$charges,  method = "pearson", use = "complete.obs")
+```
+This tells us that age and charges are slightly related with pearsons correlation of 0.299
+
+```{r}
+cor(df$age, df$charges,  method = "spearman", use = "complete.obs")
+
+```
+By using the spearman's coefficient formula, the correlation is 0.534, thus somewhat co-related.
+
+
+```{r}
+x <- df$bmi
+y <- df$charges
+# Plot with main and axis titles
+# Change point shape (pch = 19) and remove frame.
+plot(x, y, main = "Main title",
+     xlab = "bmi", ylab = "charges",
+     pch = 19, frame = FALSE)
+# Add regression line
+plot(x, y, main = "Main title",
+     xlab = "bmi", ylab = "charges",
+     pch = 19, frame = FALSE)
+abline(lm(y ~ x, data = df), col = "red")
+```
+plotting a graph between bmi and log(charges)
+```{r}
+x <- df$bmi
+y <- log(df$charges)
+# Plot with main and axis titles
+# Change point shape (pch = 19) and remove frame.
+plot(x, y, main = "Main title",
+     xlab = "bmi", ylab = "log of charges",
+     pch = 19, frame = FALSE)
+# Add regression line
+plot(x, y, main = "Main title",
+     xlab = "bmi", ylab = "log of charges",
+     pch = 19, frame = FALSE)
+abline(lm(y ~ x, data = df), col = "red")
+```
+
+
+
+the red line poorly fits the data, Also the data looks very scattered to be drawing a linear relationship between bmi and charges.
+
+##solving multiple linear regression on the data set
+
+```{r}
+model <- lm(charges ~ age + sex + bmi + children + smoker, data = df)
+summary(model)
+```
+```{r}
+summary(model)$coefficients
+
+```
+
+```{r}
+sigma(model)/mean(df$charges)
+
+```
+
+```{r}
+confint(model)
+
+```
+
+#the equation would be 
+y = intercept + 257.7350*age + -128.6399*sex + 322.3642*bmi + 474.4111*children + 23823.392
+
+# Discussion, understanding, and planning
+
+With the given problem,  concepts and objectives, various concepts and relations can be learned from the data. We can learn about how the medical charges of a person are not correlated. From the regression lines drawn between BMI and charges or age and charges, it is clear that simple multivariate regression can not be used to draw a conclusion out of the data. from calculating the pearson's and spearman's correlation we can also see that the data like age, bmi and charges are not correlated
+
+From the results and EDA observed,  data does seems to be in the normal range, as we can see from the histogram of charges and histogram of log charges(somewhat bell curve).
+
+Log transformation of charges data seems a plausible change that can help us predict better results. but there should be either additional data or additional requirements to predict better results for the model.
+
+According to the current data analysis, linear regression is not an optimal method to find solution for this problem. 
+
+```{r}
+nrow(df)
+```
+there are 1338 data points in the data set, this might be possibly enough to make a prediction.
+
+the current data has attributes which have a very less correlation with the dependent attribute, thus we might need additional independent attributes to make better predictions.

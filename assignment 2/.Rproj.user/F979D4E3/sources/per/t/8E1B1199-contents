@@ -1,0 +1,311 @@
+---
+title: "Assignment 2 INFO-659"
+author: "Rishabh Sharma"
+output: html_notebook
+---
+
+
+# A. Data Preparation
+
+## A.1. Data Loading and Initial Transformation
+```{r}
+df <- read.csv("UCI_Credit_Card (1).csv")
+View(df)
+```
+
+```{r}
+head(df, 5)
+```
+```{r}
+df$default.payment.next.month <- factor(df$default.payment.next.month,levels=c(0,1), labels=c("No","Yes"))
+```
+
+Other than these transformation, We need to do additional transofrmations on the sex, marriage, PAY_0, PAY_1, PAY_2, PAY,3, PAY_4, PAY_5 and PAY_6
+
+## A.4. Transforming Nominal Variables
+```{r}
+df$SEX <- factor(df$SEX,levels=c(1,2), labels=c("male", "female"))
+df$MARRIAGE <- factor(df$MARRIAGE,levels=c(1,2,3), labels=c("married", "single", "other")) 
+df$EDUCATION <- factor(df$EDUCATION,levels=c(1,2,3,4,5,6), labels=c("graduate school", "university", "high school","others","unknown","unknown"))
+
+df$PAY_0 <- factor(df$PAY_0,levels=c(-2,-1,0,1,2,3,4,5,6,7,8), labels=c("pay duly", "pay duly", "pay duly",
+                                                                        "delay 1 mo","delay 2 mo","delay 3 mo",
+                                                                        "delay 4 mo","delay 5 mo","delay 6 mo",
+                                                                        "delay 7 mo","delay 8 mo"))
+
+df$PAY_2 <- factor(df$PAY_2,levels=c(-2,-1,0,1,2,3,4,5,6,7,8), labels=c("pay duly", "pay duly", "pay duly",
+                                                                        "delay 1 mo","delay 2 mo","delay 3 mo",
+                                                                        "delay 4 mo","delay 5 mo","delay 6 mo",
+                                                                        "delay 7 mo","delay 8 mo"))
+
+df$PAY_3 <- factor(df$PAY_3,levels=c(-2,-1,0,1,2,3,4,5,6,7,8), labels=c("pay duly", "pay duly", "pay duly",
+                                                                        "delay 1 mo","delay 2 mo","delay 3 mo",
+                                                                        "delay 4 mo","delay 5 mo","delay 6 mo",
+                                                                        "delay 7 mo","delay 8 mo"))
+df$PAY_4 <- factor(df$PAY_4,levels=c(-2,-1,0,1,2,3,4,5,6,7,8), labels=c("pay duly", "pay duly", "pay duly",
+                                                                        "delay 1 mo","delay 2 mo","delay 3 mo",
+                                                                        "delay 4 mo","delay 5 mo","delay 6 mo",
+                                                                        "delay 7 mo","delay 8 mo"))
+df$PAY_5 <- factor(df$PAY_5,levels=c(-2,-1,0,1,2,3,4,5,6,7,8), labels=c("pay duly", "pay duly", "pay duly",
+                                                                        "delay 1 mo","delay 2 mo","delay 3 mo",
+                                                                        "delay 4 mo","delay 5 mo","delay 6 mo",
+                                                                        "delay 7 mo","delay 8 mo"))
+df$PAY_6 <- factor(df$PAY_6,levels=c(-2,-1,0,1,2,3,4,5,6,7,8), labels=c("pay duly", "pay duly", "pay duly",
+                                                                        "delay 1 mo","delay 2 mo","delay 3 mo",
+                                                                        "delay 4 mo","delay 5 mo","delay 6 mo",
+                                                                        "delay 7 mo","delay 8 mo"))
+
+
+```
+
+After these changes lets check what our dataset looks like
+
+```{r}
+head(df,10)
+```
+
+## A.2. Demographic Variables
+
+```{r}
+library(ggplot2)
+ggplot(df, aes(x=EDUCATION, fill=default.payment.next.month, color=default.payment.next.month)) + 
+  geom_bar(width = 0.5, position="stack") +
+  scale_color_manual(values=c("black","black")) +
+  scale_fill_manual(values=c("darkolivegreen4", "red"))
+```
+
+
+From this we can see that most of the data that we have is from population who have an university level education. With most of the people not having a default status next month. 
+
+#### Plotting sex against frequency for default
+```{r}
+ggplot(df, aes(x=SEX, fill=default.payment.next.month, color=default.payment.next.month)) + 
+  geom_bar(width = 0.5, position="stack") +
+  scale_color_manual(values=c("black","black")) +
+  scale_fill_manual(values=c("white", "brown"))
+```
+
+This graph shows us that we have more data for the female populus. Also,maximum female population has no Default payment for the next month.
+
+```{r}
+ggplot(df, aes(x=MARRIAGE, fill=default.payment.next.month, color=default.payment.next.month)) + 
+  geom_bar(width = 0.5, position="stack") +
+  scale_color_manual(values=c("black","black")) +
+  scale_fill_manual(values=c("orange", "blue"))
+```
+
+This graph shows us that most of the population is single which has contributed to the data. Also, Married and singles have almost similar number of defaulters for the next month, Staying close to around 2,600
+
+Now plotting around the age,
+
+```{r}
+ggplot(df, aes(x=AGE, fill=default.payment.next.month, color=default.payment.next.month)) + 
+  geom_bar(width = 0.5, position="stack")  +
+  scale_color_manual(values=c("black","black")) +
+  scale_fill_manual(values=c("darkolivegreen4", "red"))
+```
+
+Here we can see a skewed binomial distribution. We can probably change it to a bell curve by a log transformation. 
+
+Here we can see that bell curve for The defaulters and total population distributed by the age, have somewhat same skewed nature. Thus we can draw the assumption, That most of the defaulters came from the age of 22 to 45 and then declined steadily.
+
+Also there must be some correlation between the Yeses for defaulters in next month and age
+```{r}
+ggplot(df, aes(x=log(AGE), fill=default.payment.next.month, color=default.payment.next.month)) + 
+  geom_bar(width = 0.5, position="stack")  +
+  scale_color_manual(values=c("black","black")) +
+  scale_fill_manual(values=c("darkolivegreen4", "red"))
+```
+
+As we did not have a varied data in the age section, Log transformation didn't perform quite well. 
+
+
+## A.3. Payment Status Variables
+
+Now to plot for PAY_0, PAY_1, PAY_2, PAY,3, PAY_4, PAY_5 and PAY_6
+
+```{r}
+ggplot(df, aes(x=PAY_0, fill=default.payment.next.month, color=default.payment.next.month)) + 
+  geom_bar(width = 0.5, position="stack")  +
+  scale_color_manual(values=c("black","black")) +
+  scale_fill_manual(values=c("orange", "blue"))
+```
+
+Here most of our data is concentrated for people who duly pay(largest chunk of data) with some data in for people who are late by one, two and three months. Although we can still see that people who have duly paid the bills have yes as defaulters for the next month.
+```{r}
+ggplot(df, aes(x=PAY_2, fill=default.payment.next.month, color=default.payment.next.month)) + 
+  geom_bar(width = 0.5, position="stack")  +
+  scale_color_manual(values=c("black","black")) +
+  scale_fill_manual(values=c("darkolivegreen4", "red"))
+```
+
+Here most of the populus has paid their installments duly, but there is some data for people who have delayed their payment by two months.
+
+```{r}
+ggplot(df, aes(x=PAY_3, fill=default.payment.next.month, color=default.payment.next.month)) + 
+  geom_bar(width = 0.5, position="stack")  +
+  scale_color_manual(values=c("black","black")) +
+  scale_fill_manual(values=c("green", "white"))
+```
+
+Just like PAY_2, Here most of the populus has paid their installments duly, but there is some data for people who have delayed their payment by two months.
+
+
+```{r}
+ggplot(df, aes(x=PAY_4, fill=default.payment.next.month, color=default.payment.next.month)) + 
+  geom_bar(width = 0.5, position="stack")  +
+  scale_color_manual(values=c("black","black")) +
+  scale_fill_manual(values=c("yellow", "brown"))
+```
+
+Just like PAY_2 and PAY_3, Here most of the populus has paid their installments duly, but there is some data for people who have delayed their payment by two months.
+
+```{r}
+ggplot(df, aes(x=PAY_5, fill=default.payment.next.month, color=default.payment.next.month)) + 
+  geom_bar(width = 0.5, position="stack")  +
+  scale_color_manual(values=c("black","black")) +
+  scale_fill_manual(values=c("yellow", "blue"))
+```
+
+
+This graphical representation seems to showing that the most people delayed by 2 months
+
+```{r}
+ggplot(df, aes(x=PAY_6, fill=default.payment.next.month, color=default.payment.next.month)) + 
+  geom_bar(width = 0.5, position="stack")  +
+  scale_color_manual(values=c("black","black")) +
+  scale_fill_manual(values=c("grey", "red"))
+```
+
+### hypthesis formulation
+
+From the above data we can say that we can predict the defaulters in next month can be predicted using classification algorithms using attributes such as age(because of the correlation sobserved in the graph), sex, Education, marriage and the Payment features. 
+
+This can be a good business solution if one can predict which of the users are going to default in the upcoming month so that the company can target such customers and take some preventive measures.
+ 
+Running the models.
+## A.5. Selection of Training Data
+
+```{r}
+train <- df[sample(nrow(df), 5000), ]
+```
+## A.6. Selection of Testing Data
+
+```{r}
+test <- df[c(1,214,23),]
+```
+
+# B. Data Classification
+
+## B.1. Naive Bayes using Demographic Variables
+```{r}
+library(e1071)
+nbDem <- naiveBayes(default.payment.next.month ~ SEX + EDUCATION + MARRIAGE, train)
+nbDem
+```
+For 0, our probability is 0.7782 and 1 is o.2218 which makes sense, since in our intial analysis we came to know that there are more non defaulters than the defaulters. 
+
+
+Running our trained model on testing data set
+
+```{r}
+predict(nbDem, test[0,])
+```
+
+```{r}
+predict(nbDem, test[2,])
+```
+
+## B.2. Naive Bayes using Payment Status
+```{r}
+library(e1071)
+nbDem <- naiveBayes(default.payment.next.month ~ PAY_0 + PAY_2 + PAY_3 + PAY_4 +PAY_5 +PAY_6, train)
+nbDem
+```
+```{r}
+predict(nbDem, test[1,])
+```
+
+```{r}
+predict(nbDem, test[2,])
+```
+
+## B.3. Smoothed Naive Bayes using Payment Status
+
+```{r}
+nbPay <- naiveBayes(default.payment.next.month ~ PAY_0 + PAY_2 + PAY_3, train, laplace=1.5)
+predict(nbPay, test[1,])
+```
+Changing the laplace value to 1 and 2
+```{r}
+nbPay <- naiveBayes(default.payment.next.month ~ PAY_0 + PAY_2 + PAY_3, train, laplace=1)
+predict(nbPay, test[3,])
+```
+
+```{r}
+nbPay <- naiveBayes(default.payment.next.month ~ PAY_0 + PAY_2 + PAY_3, train, laplace=2.0)
+predict(nbPay, test[1,])
+```
+# C. Classification with Decision Tree
+
+## C.1. Basic Decision Tree
+
+
+```{r}
+library("rpart")
+library("rpart.plot")
+dtPay <- rpart(default.payment.next.month ~ PAY_0 + PAY_2 + PAY_3 + PAY_4 + PAY_5 + PAY_6,
+            method="class",
+            data=train, parms=list(split='information'), 
+            minsplit=20, cp=0.04)
+```
+
+```{r}
+predict(dtPay, test[1,])
+```
+
+```{r}
+predict(dtPay, test[2,])
+
+```
+```{r}
+predict(dtPay, test[3,])
+
+```
+
+
+```{r}
+rpart.plot(dtPay, type=4, extra=1)
+```
+
+## C.2. Decision Tree with a Different Complexity Parameter
+
+
+```{r}
+dtPay <- rpart(default.payment.next.month ~ PAY_2 + PAY_3 + PAY_4 + PAY_5 + PAY_6,
+            method="class",
+            data=train, parms=list(split='information'), 
+            minsplit=20, cp=0.01)
+rpart.plot(dtPay, type=4, extra=1)
+```
+
+
+```{r}
+predict(dtPay, test[1,])
+```
+
+```{r}
+predict(dtPay, test[2,])
+
+```
+```{r}
+predict(dtPay, test[3,])
+
+```
+
+# D. Conclusion
+Since, The accuracy was not calculated, It would be very hard to share the true results. but one can clearly say that both the models worked pretty well. 
+
+Naive Bayse showed us that the number of elements for which we will be getting No would be some what close to 78% whereas, Yeses would be close to 22%. Which is the conclusion one can draw from the data exploration done in the part B of this notebook. 
+
+Decision Tree although gives us a better approach on how we can know how the decision was made by the model. Apart from this decision tree told us about the probablity of yes and no for each test case, Something naive bayes failed to do. 
